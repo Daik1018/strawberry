@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍓 草莓智能数据标注系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-seedling"></i>
+                    <span>草莓智能标注系统</span>
+                </div>
+                <nav class="nav-menu">
+                    <a href="#" class="nav-item active"><i class="fas fa-home"></i> 首页</a>
+                    <a href="#" class="nav-item"><i class="fas fa-camera"></i> 识别</a>
+                    <a href="#" class="nav-item"><i class="fas fa-chart-bar"></i> 数据</a>
+                    <a href="#" class="nav-item"><i class="fas fa-cog"></i> 设置</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="upload-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> 图片上传</h2>
+                    <p>上传草莓图片，系统将自动识别并标注草莓位置、类型和病害状态</p>
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h3>拖拽图片到此处 或 点击选择文件</h3>
+                    <p>支持 JPG, PNG 格式，最大 10MB</p>
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                    <button class="upload-btn" id="uploadBtn">
+                        <i class="fas fa-plus"></i> 选择图片
+                    </button>
+                </div>
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">识别中...</span>
+                </div>
+                <div class="accuracy-info" id="accuracyInfo" style="display: none;">
+                    <i class="fas fa-bullseye"></i>
+                    <span>模型识别准确率: <strong id="modelAccuracy">95.2%</strong></span>
+                </div>
+            </section>
+
+            <section class="result-section" id="resultSection" style="display: none;">
+                <div class="section-header">
+                    <h2><i class="fas fa-search"></i> 识别结果</h2>
+                    <div class="result-stats" id="resultStats">
+                        <span class="stat-item">
+                            <i class="fas fa-layer-group"></i>
+                            检测到 <strong id="strawberryCount">0</strong> 个草莓
+                        </span>
+                        <span class="stat-item">
+                            <i class="fas fa-check-circle"></i>
+                            健康 <strong id="healthyCount">0</strong> 个
+                        </span>
+                        <span class="stat-item warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            病害 <strong id="diseaseCount">0</strong> 个
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="result-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="autoDetectBtn" title="重新识别">
+                            <i class="fas fa-magic"></i> 重新识别
+                        </button>
+                        <button class="toolbar-btn active" id="manualDrawBtn" title="手动框选">
+                            <i class="fas fa-vector-square"></i> 手动框选
+                        </button>
+                    </div>
+                    <div class="toolbar-hint">
+                        <i class="fas fa-info-circle"></i>
+                        提示: 点击"手动框选"后在图片上拖动鼠标绘制标注框
+                    </div>
+                </div>
+                
+                <div class="result-content">
+                    <div class="image-display">
+                        <div class="image-container" id="imageContainer">
+                            <img id="uploadedImage" src="" alt="上传的图片">
+                            <canvas id="boundingCanvas"></canvas>
+                            <canvas id="drawingCanvas"></canvas>
+                        </div>
+                        <div class="image-controls">
+                            <button class="control-btn" id="zoomInBtn" title="放大">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="control-btn" id="zoomOutBtn" title="缩小">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="control-btn" id="resetBtn" title="重置">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="annotation-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-list"></i> 草莓标注列表</h3>
+                            <button class="action-btn primary" id="addAnnotationBtn">
+                                <i class="fas fa-plus"></i> 手动添加
+                            </button>
+                        </div>
+                        <div class="annotation-list" id="annotationList">
+                        </div>
+                        <div class="panel-footer">
+                            <button class="action-btn success" id="saveAllBtn">
+                                <i class="fas fa-save"></i> 保存标注
+                            </button>
+                            <button class="action-btn secondary" id="exportBtn">
+                                <i class="fas fa-file-export"></i> 导出数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="history-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> 历史记录</h2>
+                </div>
+                <div class="history-grid" id="historyGrid">
+                </div>
+            </section>
+        </main>
+
+        <div class="modal" id="annotationModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-edit"></i> 编辑标注</h3>
+                    <button class="modal-close" id="closeModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modalType">草莓类型</label>
+                        <select id="modalType">
+                            <option value="">请选择</option>
+                            <option value="红颜">🍓 红颜（Benihoppe）</option>
+                            <option value="章姬">🍓 章姬（Akihime）</option>
+                            <option value="甜宝">🍓 甜宝（Sweet Berry）</option>
+                            <option value="丰香">🍓 丰香（Toyonoka）</option>
+                            <option value="奶油草莓">🍓 奶油草莓</option>
+                            <option value="久久红">🍓 久久红</option>
+                            <option value="妙香">🍓 妙香</option>
+                            <option value="京藏香">🍓 京藏香</option>
+                            <option value="白雪公主">🍓 白雪公主（白色）</option>
+                            <option value="桃熏">🍓 桃熏（粉色）</option>
+                            <option value="其他">🍓 其他品种</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalDisease">病害状态</label>
+                        <select id="modalDisease">
+                            <option value="">请选择</option>
+                            <option value="健康">✅ 健康</option>
+                            <option value="灰霉病">🦠 灰霉病（Botrytis）</option>
+                            <option value="白粉病">🦠 白粉病（Powdery Mildew）</option>
+                            <option value="炭疽病">🦠 炭疽病（Anthracnose）</option>
+                            <option value="叶斑病">🦠 叶斑病（Leaf Spot）</option>
+                            <option value="根腐病">🦠 根腐病（Root Rot）</option>
+                            <option value="病毒病">🦠 病毒病（Virus）</option>
+                            <option value="蚜虫危害">🐛 蚜虫危害</option>
+                            <option value="红蜘蛛危害">🕷️ 红蜘蛛危害</option>
+                            <option value="机械损伤">💔 机械损伤</option>
+                            <option value="霜冻损伤">❄️ 霜冻损伤</option>
+                            <option value="日灼">☀️ 日灼伤害</option>
+                            <option value="其他病害">⚠️ 其他问题</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalNotes">备注信息</label>
+                        <textarea id="modalNotes" placeholder="添加备注信息，如病害程度、位置等..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>置信度: <span id="modalConfidence">90%</span></label>
+                        <div class="confidence-display">
+                            <input type="range" id="modalConfidenceInput" min="50" max="100" value="90">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn secondary" id="cancelModalBtn">取消</button>
+                    <button class="action-btn primary" id="confirmModalBtn">确认保存</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast-container" id="toastContainer"></div>
+
+        <footer class="footer">
+            <p>© 2024 草莓智能标注系统 | 基于深度学习的草莓识别与病害检测</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

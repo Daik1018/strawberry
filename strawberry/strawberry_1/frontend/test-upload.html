@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+        img {
+            max-width: 300px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>上传功能测试</h1>
+    
+    <div class="test-area">
+        <h2>测试 1: 基本文件上传</h2>
+        <input type="file" id="testFileInput" accept="image/*">
+        <button onclick="testUpload()">测试上传</button>
+    </div>
+    
+    <div class="result" id="testResult">
+        测试结果将显示在这里
+    </div>
+    
+    <div id="imagePreview"></div>
+    
+    <script>
+        function testUpload() {
+            const fileInput = document.getElementById('testFileInput');
+            const file = fileInput.files[0];
+            const resultDiv = document.getElementById('testResult');
+            const previewDiv = document.getElementById('imagePreview');
+            
+            if (!file) {
+                resultDiv.innerHTML = '<strong>错误:</strong> 请选择文件';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<strong>测试中:</strong> 正在处理文件...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                resultDiv.innerHTML = '<strong>成功:</strong> 文件读取完成';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewDiv.innerHTML = '<h3>图片预览:</h3>';
+                previewDiv.appendChild(img);
+                
+                resultDiv.innerHTML += '<br>文件名: ' + file.name;
+                resultDiv.innerHTML += '<br>文件大小: ' + (file.size / 1024).toFixed(2) + ' KB';
+                resultDiv.innerHTML += '<br>文件类型: ' + file.type;
+            };
+            
+            reader.onerror = function() {
+                resultDiv.innerHTML = '<strong>错误:</strong> 文件读取失败';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>

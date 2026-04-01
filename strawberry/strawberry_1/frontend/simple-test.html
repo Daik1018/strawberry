@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单上传测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .upload-area { border: 2px dashed #ccc; padding: 20px; margin: 20px 0; text-align: center; cursor: pointer; }
+        .upload-area:hover { border-color: #27ae60; }
+        .result { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+        img { max-width: 300px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>简单上传测试</h1>
+    
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <h3>点击上传图片</h3>
+        <p>支持 JPG, PNG 格式</p>
+        <input type="file" id="fileInput" accept="image/*" hidden onchange="handleFile(this)">
+    </div>
+    
+    <div class="result" id="result">
+        上传结果将显示在这里
+    </div>
+    
+    <div id="preview"></div>
+    
+    <script>
+        function handleFile(input) {
+            const file = input.files[0];
+            const resultDiv = document.getElementById('result');
+            const previewDiv = document.getElementById('preview');
+            
+            if (!file) {
+                resultDiv.innerHTML = '请选择文件';
+                return;
+            }
+            
+            resultDiv.innerHTML = '正在处理...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                resultDiv.innerHTML = '上传成功！';
+                resultDiv.innerHTML += '<br>文件名: ' + file.name;
+                resultDiv.innerHTML += '<br>大小: ' + (file.size / 1024).toFixed(2) + ' KB';
+                resultDiv.innerHTML += '<br>类型: ' + file.type;
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewDiv.innerHTML = '<h3>预览:</h3>';
+                previewDiv.appendChild(img);
+            };
+            
+            reader.onerror = function() {
+                resultDiv.innerHTML = '上传失败！';
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // 测试拖拽功能
+        const uploadArea = document.querySelector('.upload-area');
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#27ae60';
+        });
+        
+        uploadArea.addEventListener('dragleave', function() {
+            this.style.borderColor = '#ccc';
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ccc';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const input = document.getElementById('fileInput');
+                input.files = e.dataTransfer.files;
+                handleFile(input);
+            }
+        });
+    </script>
+</body>
+</html>
