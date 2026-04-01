@@ -23,6 +23,7 @@
 超参数配置：设置批次大小（batch size）、学习率（lr=0.001）、迭代次数（epochs=100）等；
 训练过程：在训练集上迭代训练，验证集实时评估精度（mAP@0.5），通过早停法（Early Stopping）避免过拟合；
 模型评估：在测试集上验证，核心指标：精确率（Precision）、召回率（Recall）、mAP@0.5，确保识别准确率≥90%。
+
 （3）识别功能开发
 # 核心识别代码示例（以YOLOv8为例）
 from ultralytics import YOLO
