@@ -1,19 +1,18 @@
-草莓识别项目说明（适配 GitHub/CSDN 发布）
+# 草莓识别项目说明（适配 GitHub/CSDN 发布）
 
-一、项目功能概述
+# 一、项目功能概述
 本项目实现了草莓的多场景智能识别，核心功能包含：
 图像端识别：支持单张 / 批量草莓图片的识别，判断是否为草莓、区分成熟 / 未成熟草莓、识别草莓是否存在病虫害（如灰霉病、白粉病）；
 实时视频 / 摄像头识别：调用本地摄像头或视频文件，实时检测画面中的草莓并标注识别结果（类别、置信度、检测框）；
 识别结果可视化：自动生成带检测框、类别标签的识别结果图，输出识别日志（包含识别类别、置信度、耗时）；
 轻量化部署支持：模型支持轻量化导出，可适配边缘设备（如树莓派）或 Web 端快速部署。
 
-二、技术实现原理
+# 二、技术实现原理
 1. 核心技术栈
 深度学习框架	PyTorch/TensorFlow（二选一，根据实际使用标注）
 目标检测模型	YOLOv8/YOLOv5/Faster R-CNN（优先轻量化的 YOLO 系列，适配草莓检测场景）
 数据处理	OpenCV（图像预处理）、PIL（图像读取）、LabelImg（数据标注）、Albumentations（数据增强）
 可视化 / 部署	Matplotlib（结果可视化）、Gradio/Streamlit（Web 端）、ONNX（模型轻量化）
-
 2. 实现步骤
 （1）数据集构建与预处理
 数据采集：收集不同场景（自然光、大棚、不同角度）、不同状态（成熟 / 未成熟 / 病虫害）的草莓图片，数量建议≥1000 张；
@@ -29,10 +28,10 @@
 from ultralytics import YOLO
 import cv2
 
-# 加载训练好的模型
+加载训练好的模型
 model = YOLO("runs/detect/train/weights/best.pt")
 
-# 单张图片识别
+单张图片识别
 def detect_image(img_path, save_path="result.jpg"):
     img = cv2.imread(img_path)
     results = model(img)  # 模型推理
@@ -47,7 +46,7 @@ def detect_image(img_path, save_path="result.jpg"):
         detect_info.append({"class": cls, "confidence": conf})
     return detect_info, save_path
 
-# 实时摄像头识别
+实时摄像头识别
 def detect_camera():
     cap = cv2.VideoCapture(0)  # 调用本地摄像头
     while cap.isOpened():
@@ -72,7 +71,7 @@ if __name__ == "__main__":
 对识别结果绘制检测框、类别标签、置信度；
 封装识别函数为可调用接口，支持命令行 / API 调用。
 
-三、部署教程
+# 三、部署教程
 1. 环境部署（本地 / 服务器）
 （1）环境要求
 系统：Windows/Linux/macOS
@@ -81,9 +80,9 @@ Python 版本：3.8~3.10
 bash
 
 
-# 安装核心依赖
+安装核心依赖
 pip install ultralytics opencv-python pillow matplotlib numpy
-# 若使用PyTorch，补充安装（根据CUDA版本适配）
+若使用PyTorch，补充安装（根据CUDA版本适配）
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 （2）源码部署步骤
@@ -98,14 +97,13 @@ cd strawberry-detection
 bash
 运行
 
-# 单张图片识别
+ 单张图片识别
 python detect.py --img_path test.jpg
-# 摄像头实时识别
+ 摄像头实时识别
 python detect.py --camera
-2. Web 端部署（Gradio 快速搭建）
+# 2. Web 端部署（Gradio 快速搭建）
 python
 运行
-# app.py
 import gradio as gr
 from detect import detect_image
 
@@ -144,19 +142,19 @@ model.export(format="onnx")  # 导出为best.onnx
 （2）ONNX 模型推理（适配树莓派等边缘设备）
 bash
 运行
-# 安装ONNX运行依赖
+##安装ONNX运行依赖
 pip install onnxruntime opencv-python
 python
 运行
-# onnx_detect.py
+##onnx_detect.py
 import onnxruntime as ort
 import cv2
 import numpy as np
 
-# 加载ONNX模型
+##加载ONNX模型
 ort_session = ort.InferenceSession("weights/best.onnx")
 
-# 图像预处理
+##图像预处理
 def preprocess(img, input_size=(640, 640)):
     img = cv2.resize(img, input_size)
     img = img / 255.0
@@ -164,7 +162,7 @@ def preprocess(img, input_size=(640, 640)):
     img = np.expand_dims(img, axis=0).astype(np.float32)
     return img
 
-# ONNX推理
+##ONNX推理
 def onnx_detect(img_path):
     img = cv2.imread(img_path)
     img_origin = img.copy()
@@ -178,7 +176,7 @@ def onnx_detect(img_path):
 if __name__ == "__main__":
     onnx_detect("test.jpg")
 
-4. 部署注意事项
+# 4. 部署注意事项
 若使用 GPU 加速，需确保安装对应版本的 CUDA/CUDNN；
 边缘设备（树莓派）建议使用轻量化模型（YOLOv8n），并关闭不必要的可视化；
 服务器部署可配合 Nginx 反向代理，对外提供稳定的 Web 识别服务。
